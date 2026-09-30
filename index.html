@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FitSync - Premium Workout & Routine Tracker</title>
+  <meta name="description" content="FitSync is a modern, premium Progressive Web App for tracking your fitness journey, workouts, and progress with beautiful aesthetics and smart goals.">
+  <link rel="icon" type="image/jpeg" href="./logo.jpg">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#050505">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FitSync">
+
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Dexie.js for IndexedDB -->
+  <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- Custom Install Prompt -->
+  <div id="installPrompt" class="install-banner hidden">
+    <div class="install-info">
+      <i class="fa-solid fa-download"></i>
+      <div>
+        <h4>Add FitSync to Homescreen</h4>
+        <p>Install for offline use & better experience</p>
+      </div>
+    </div>
+    <div class="install-actions">
+      <button id="btnInstallDismiss" class="btn-text">Later</button>
+      <button id="btnInstallAccept" class="btn-primary">Install</button>
+    </div>
+  </div>
+
+  <div class="app-container">
+    
+    <!-- Header -->
+    <header class="top-header">
+      <div class="logo-area">
+        <i class="fa-solid fa-dumbbell text-gradient"></i>
+        <h1>Fit<span>Sync</span></h1>
+      </div>
+      <div class="header-right">
+        <div id="currentDate" class="date-display"></div>
+        <div id="modeChip" class="mode-chip">Mode</div>
+      </div>
+    </header>
+
+    <!-- MAIN VIEWS -->
+    <main class="main-content">
+      
+      <!-- 1. Home Dashboard -->
+      <section id="view-home" class="view-section active">
+        
+        <!-- Install App Banner (Hidden by default) -->
+        <div id="installBanner" style="display: none; background: linear-gradient(135deg, var(--accent-1), #050505); padding: 15px 20px; border-radius: 16px; margin-bottom: 20px; color: #fff; align-items: center; justify-content: space-between; border: 1px solid rgba(0,242,254,0.3);">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="background: rgba(0, 242, 254, 0.1); padding: 10px; border-radius: 12px; color: var(--accent-1);">
+              <i class="fa-solid fa-download" style="font-size: 1.2rem;"></i>
+            </div>
+            <div>
+              <h4 style="margin: 0; font-size: 1rem; font-weight: 700;">Install FitSync App</h4>
+              <p style="margin: 0; font-size: 0.75rem; color: #aaa;">Add to home screen for fast access</p>
+            </div>
+          </div>
+          <button id="btnInstallApp" style="background: var(--accent-1); color: #fff; border: none; padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; cursor: pointer;">Install</button>
+        </div>
+
+        <div class="streak-banner glass">
+          <div class="streak-info">
+            <i class="fa-solid fa-fire streak-icon"></i>
+            <div>
+              <h3>Day Streak</h3>
+              <p><span id="streakCount">0</span></p>
+            </div>
+          </div>
+          <div class="motivational-tip" id="dailyTip">
+            "Consistency is the key to progress."
+          </div>
+        </div>
+
+        <div class="workout-cards-container" id="workoutCards">
+          <!-- Dynamically populated by JS based on mode and day -->
+        </div>
+
+        <!-- Daily Targets (Water, Steps, Sleep) -->
+        <div class="targets-card glass" style="margin-top: 20px;">
+          <h3 style="margin-bottom:15px; font-size:1.1rem;">Daily Targets</h3>
+          
+          <div class="target-row">
+            <div class="target-header">
+              <span>💧 Water (3-4L)</span>
+              <span id="waterVal" class="target-val">0 / 4L</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="waterBar" style="width:0%"></div></div>
+            <button class="btn-text btn-add-target" onclick="logWater()">+ 0.5L</button>
+          </div>
+
+          <div class="target-row">
+            <div class="target-header">
+              <span>👟 Steps (10k)</span>
+              <span id="stepsVal" class="target-val">0 / 10k</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="stepsBar" style="width:0%"></div></div>
+            <button class="btn-text btn-add-target" onclick="logSteps()">+ 1000 Steps</button>
+          </div>
+
+          <div class="target-row">
+            <div class="target-header">
+              <span>😴 Sleep (8 hrs)</span>
+              <span id="sleepVal" class="target-val">0 / 8h</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="sleepBar" style="width:0%"></div></div>
+            <button class="btn-text btn-add-target" onclick="logSleep()">+ 1 hr</button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 2. Schedule -->
+      <section id="view-schedule" class="view-section">
+        <div class="section-header">
+          <h2>7-Day Plan</h2>
+          <p>Your weekly roadmap to success</p>
+        </div>
+        <div class="accordion-list" id="scheduleList">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- 3. Progress (Charts, Calendar, Records, Photos) -->
+      <section id="view-progress" class="view-section">
+        <div class="section-header">
+          <h2>Progress Tracker</h2>
+          <p>Analyze your journey</p>
+        </div>
+        
+        <!-- Personal Records -->
+        <div class="records-grid">
+          <div class="record-card glass">
+            <div class="record-val text-gradient" id="pr-streak">0</div>
+            <div class="record-lbl">Best Streak</div>
+          </div>
+          <div class="record-card glass">
+            <div id="pr-total" class="record-val text-gradient" style="color:var(--success)">0</div>
+            <div class="record-lbl">Total Workouts</div>
+          </div>
+          <div class="record-card glass">
+            <div class="record-val text-gradient"><span id="pr-weight">--</span></div>
+            <div class="record-lbl">Current BMI</div>
+            <div id="bmiCategory" style="font-size:0.7rem; margin-top:4px; font-weight:600;">--</div>
+          </div>
+        </div>
+
+        <!-- Goal Tracker -->
+        <div class="goal-card glass" style="margin-top:20px; padding: 20px;">
+          <h3 style="margin-bottom:10px; font-size:1.1rem;">Weight Goal</h3>
+          <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <div style="text-align:center;">
+              <div style="font-size:0.8rem; color:var(--text-secondary);">Current</div>
+              <div style="font-size:1.2rem; font-weight:700;" id="goalCurrent">-- kg</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:0.8rem; color:var(--text-secondary);">Target</div>
+              <div style="font-size:1.2rem; font-weight:700; color:var(--accent-1);" id="goalTarget">-- kg</div>
+            </div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="goalBar" style="width:0%"></div></div>
+          <p id="goalEstimate" style="font-size:0.8rem; color:var(--text-secondary); margin-top:10px; text-align:center;">--</p>
+        </div>
+
+        <!-- Custom Weight Chart Card -->
+        <div class="weight-dashboard-card" style="margin-top:20px; background: #1c1c1e; border-radius: 20px; padding: 20px; color: #fff;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+            <h3 style="font-size: 1.2rem; font-weight: 600; margin:0;">Weight <i class="fa-solid fa-chevron-right" style="font-size:0.9rem; color:#888;"></i></h3>
+            <div style="text-align: right;">
+              <span style="font-size: 0.8rem; color: #888;">Goal</span>
+              <div style="font-size: 1.2rem; font-weight: 600;" id="customGoalText">-- kg</div>
+            </div>
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <div style="display: flex; gap: 10px;">
+              <div id="weightPillDiff" style="background: rgba(231, 76, 60, 0.15); color: #e74c3c; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">--</div>
+              <div id="weightPillPlan" style="background: rgba(231, 76, 60, 0.15); color: #e74c3c; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">--</div>
+            </div>
+            
+            <div class="timeframe-toggle" style="background: rgba(255,255,255,0.1); border-radius: 20px; display: flex; padding: 3px;">
+              <button id="btnChartWeek" onclick="setChartTimeframe('week')" style="background: var(--accent-1); color: #fff; border: none; padding: 4px 12px; border-radius: 15px; font-size: 0.8rem; font-weight: 600; cursor: pointer;">Week</button>
+              <button id="btnChartMonth" onclick="setChartTimeframe('month')" style="background: transparent; color: #888; border: none; padding: 4px 12px; border-radius: 15px; font-size: 0.8rem; font-weight: 600; cursor: pointer;">Month</button>
+            </div>
+          </div>
+          
+          <div style="position: relative; width: 100%; height: 220px;">
+            <canvas id="customWeightCanvas" style="width:100%; height:100%; display:block;"></canvas>
+          </div>
+        </div>
+
+        <!-- Weekly Chart -->
+        <div class="chart-card glass" style="margin-top:20px;">
+          <h3 style="margin-bottom:15px; font-size:1.1rem;">Workouts This Week</h3>
+          <div class="chart-bars" id="weekChart"></div>
+          <div class="chart-labels" id="weekChartLabels"></div>
+        </div>
+
+        <!-- Monthly Calendar -->
+        <div class="calendar-card glass" style="margin-top:20px;">
+          <div class="calendar-header">
+            <button onclick="changeMonth(-1)" class="btn-text">‹</button>
+            <h3 id="calMonthLabel" style="font-size:1.1rem;">May 2025</h3>
+            <button onclick="changeMonth(1)" class="btn-text">›</button>
+          </div>
+          <div class="calendar-days-label">
+            <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+          </div>
+          <div class="calendar-full" id="fullCalendar"></div>
+        </div>
+
+        <!-- Physique Photos Section inside Progress -->
+        <div class="photos-card glass" style="margin-top:20px;">
+          <h3 style="margin-bottom:15px; font-size:1.1rem;">Physique Gallery</h3>
+          <div class="upload-area" id="uploadArea">
+            <input type="file" id="photoInput" accept="image/*" hidden>
+            <label for="photoInput" class="upload-btn">
+              <i class="fa-solid fa-camera"></i>
+              <span>Add New Photo</span>
+            </label>
+          </div>
+          <div class="photo-grid" id="photoGrid">
+            <!-- Populated by Dexie -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 4. Log (Metrics & Weight) -->
+      <section id="view-log" class="view-section">
+        <div class="section-header">
+          <h2>Daily Log</h2>
+          <p>Track your weight & well-being</p>
+        </div>
+        
+        <div class="log-form glass">
+          <div class="text-group">
+            <label>Today's Weight (kg)</label>
+            <input type="number" id="logWeight" placeholder="e.g. 75.5" class="styled-input">
+          </div>
+          
+          <div class="range-group">
+            <label>Energy Levels (<span id="valEnergy">5</span>/10)</label>
+            <input type="range" id="sliderEnergy" min="1" max="10" value="5">
+          </div>
+          <div class="range-group">
+            <label>Muscle Soreness (<span id="valSoreness">5</span>/10)</label>
+            <input type="range" id="sliderSoreness" min="1" max="10" value="5">
+          </div>
+          <div class="range-group">
+            <label>Sleep Quality (<span id="valSleep">5</span>/10)</label>
+            <input type="range" id="sliderSleep" min="1" max="10" value="5">
+          </div>
+
+          <div class="text-group">
+            <label>Workout Notes</label>
+            <textarea id="logNotes" placeholder="Diet, PRs, how you felt today..."></textarea>
+          </div>
+
+          <button id="btnSaveLog" class="btn-primary w-100">Save Log</button>
+        </div>
+
+        <div class="history-log" id="historyLogList">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- 5. Settings -->
+      <section id="view-settings" class="view-section">
+        <div class="section-header">
+          <h2>Settings</h2>
+          <p>Configure your experience</p>
+        </div>
+
+        <div class="settings-card glass">
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Workout Mode</h4>
+              <p id="modeDescText">Beginner (Full Body / Rest)</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggleMode">
+              <span class="slider round"></span>
+            </label>
+          </div>
+          
+          <hr class="divider">
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Your Height (cm)</h4>
+              <p>For BMI calculation</p>
+            </div>
+            <input type="number" id="settingHeight" placeholder="175" class="styled-input" style="width: 80px;">
+          </div>
+          <hr class="divider">
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Current Weight (kg)</h4>
+              <p>Your starting point</p>
+            </div>
+            <input type="number" id="settingWeight" placeholder="75" class="styled-input" style="width: 80px;">
+          </div>
+          <hr class="divider">
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Dream Weight (kg)</h4>
+              <p>Your target goal</p>
+            </div>
+            <input type="number" id="settingTargetWeight" placeholder="65" class="styled-input" style="width: 80px;">
+          </div>
+
+          <hr class="divider">
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4 class="text-danger">Danger Zone</h4>
+              <p>Wipe all data permanently</p>
+            </div>
+            <button id="btnClearData" class="btn-danger">Clear Data</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav glass-nav">
+      <button class="nav-item active" data-target="view-home">
+        <i class="fa-solid fa-house"></i>
+        <span>Home</span>
+      </button>
+      <button class="nav-item" data-target="view-schedule">
+        <i class="fa-solid fa-calendar-days"></i>
+        <span>Schedule</span>
+      </button>
+      <button class="nav-item" data-target="view-progress">
+        <i class="fa-solid fa-chart-line"></i>
+        <span>Progress</span>
+      </button>
+      <button class="nav-item" data-target="view-log">
+        <i class="fa-solid fa-clipboard-list"></i>
+        <span>Log</span>
+      </button>
+      <button class="nav-item" data-target="view-settings">
+        <i class="fa-solid fa-gear"></i>
+        <span>Settings</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- EXERCISE ANIMATION MODAL -->
+  <div class="animation-modal" id="exerciseModal" style="display:none" onclick="closeModal(event)">
+    <div class="anim-card glass" id="modalCard" style="display:flex; flex-direction:column; align-items:center;">
+      <div class="anim-header" style="width: 100%;">
+        <h3 id="modalTitle">Exercise</h3>
+        <button class="close-btn btn-text" onclick="closeExerciseModal()">✕</button>
+      </div>
+      <div class="anim-visual" id="modalAnim">
+        <!-- SVG injected here -->
+      </div>
+      <div class="anim-info" style="width:100%; text-align:center;">
+        <p id="modalDesc" style="font-size:0.9rem;color:var(--text-secondary);line-height:1.5;margin-bottom:10px"></p>
+        
+        <!-- Timer UI -->
+        <div id="timerContainer" style="display:none; flex-direction:column; align-items:center; margin-bottom:15px;">
+          <div id="timerDisplay" style="font-size:3rem; font-weight:800; color:var(--accent-1); font-variant-numeric:tabular-nums;">00:30</div>
+          <div id="timerLabel" style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent-2); font-weight:700;">Resting</div>
+        </div>
+        
+        <div class="anim-sets" id="setTracker" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;"></div>
+        
+        <button id="btnActionTimer" class="btn-primary" style="margin-top:20px; width:100%; border-radius:30px; padding:12px; font-weight:700;" onclick="handleModalAction()">Start Exercise</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast glass" id="toast"></div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

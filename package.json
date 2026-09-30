@@ -1,0 +1,11 @@
+{
+  "name": "fitsync",
+  "version": "1.0.0",
+  "description": "FitSync PWA",
+  "scripts": {
+    "dev": "vite"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
