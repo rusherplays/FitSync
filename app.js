@@ -1,7 +1,7 @@
 // -----------------------------------------
 // DATABASE & STATE INIT
 // -----------------------------------------
-const db = new Dexie('FitSyncDB');
+const db = new Dexie('FiitSyncDB');
 db.version(1).stores({
   photos: '++id, date, image, timestamp'
 });
@@ -23,7 +23,7 @@ const defaultState = {
 };
 
 function getState() {
-  let s = JSON.parse(localStorage.getItem('fitsync_state'));
+  let s = JSON.parse(localStorage.getItem('fiitsync_state'));
   if(!s) s = defaultState;
   else {
     // Merge missing defaults
@@ -35,7 +35,7 @@ function getState() {
 }
 
 function saveState(state) {
-  localStorage.setItem('fitsync_state', JSON.stringify(state));
+  localStorage.setItem('fiitsync_state', JSON.stringify(state));
 }
 
 function getTodayStr() {
@@ -43,11 +43,11 @@ function getTodayStr() {
 }
 
 function getDailyProgress(date) {
-  return JSON.parse(localStorage.getItem(`fitsync_prog_${date}`)) || {};
+  return JSON.parse(localStorage.getItem(`fiitsync_prog_${date}`)) || {};
 }
 
 function saveDailyProgress(date, prog) {
-  localStorage.setItem(`fitsync_prog_${date}`, JSON.stringify(prog));
+  localStorage.setItem(`fiitsync_prog_${date}`, JSON.stringify(prog));
 }
 
 let appState = getState();
@@ -184,7 +184,11 @@ if ('serviceWorker' in navigator) {
 }
 
 
-document.addEventListener('DOMContentLoaded', initApp);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 
 function initApp() {
   document.getElementById('currentDate').innerText = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
@@ -1115,7 +1119,7 @@ window.sendChat = async function() {
       body: JSON.stringify({
         contents: chatHistory,
         systemInstruction: {
-          parts: [{ text: "You are FitSync AI, a highly encouraging and scientifically accurate personal trainer. Keep answers very short (1-3 sentences) and highly actionable. Use emojis." }]
+          parts: [{ text: "You are FiitSync AI, a highly encouraging and scientifically accurate personal trainer. Keep answers very short (1-3 sentences) and highly actionable. Use emojis." }]
         }
       })
     });

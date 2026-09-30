@@ -1,7 +1,7 @@
 {
-  "name": "fitsync",
+  "name": "fiitsync",
   "version": "1.0.0",
-  "description": "FitSync PWA",
+  "description": "FiitSync PWA",
   "scripts": {
     "dev": "vite"
   },
