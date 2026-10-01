@@ -1,9 +1,13 @@
 {
+  "id": "fiitsync-app-v1",
   "name": "FiitSync",
   "short_name": "FiitSync",
-  "description": "Fitness & Workout Routine Tracker",
-  "start_url": "./index.html",
+  "description": "Premium Fitness & Workout Routine Tracker",
+  "start_url": "./index.html?source=pwa",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
+  "lang": "en",
   "background_color": "#050505",
   "theme_color": "#00f0ff",
   "icons": [
