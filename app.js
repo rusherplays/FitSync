@@ -1307,34 +1307,74 @@ const btnInstallAccept = document.getElementById('btnInstallAccept');
 const btnInstallDismiss = document.getElementById('btnInstallDismiss');
 const btnSettingsInstall = document.getElementById('btnSettingsInstall');
 
+// Helper: update the Settings install/update button label & description
+const updateInstallButtonUI = () => {
+  if (!btnSettingsInstall) return;
+  const descEl = btnSettingsInstall.closest('.setting-item')?.querySelector('p');
+  if (deferredPrompt) {
+    // App not yet installed — offer Install
+    btnSettingsInstall.innerHTML = '<i class="fa-solid fa-download" style="margin-right:6px;"></i>Install';
+    btnSettingsInstall.style.background = 'linear-gradient(135deg, var(--accent-1), var(--accent-2))';
+    if (descEl) descEl.textContent = 'Install FiitSync as a native app on your device';
+  } else {
+    // Already installed / running as PWA — offer Force Update
+    btnSettingsInstall.innerHTML = '<i class="fa-solid fa-rotate" style="margin-right:6px;"></i>Update';
+    btnSettingsInstall.style.background = '';
+    if (descEl) descEl.textContent = 'Force refresh to the latest version';
+  }
+};
+
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
+  updateInstallButtonUI();
   if (installPrompt) {
     installPrompt.classList.remove('hidden');
   }
 });
 
+// Run once on load to set initial state
+updateInstallButtonUI();
+
 const handleInstall = async () => {
   if (!deferredPrompt) {
-    // No install prompt — act as Force Update
-    if ('serviceWorker' in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      for (const reg of regs) {
-        await reg.update();
-        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    // No install prompt — force update: clear all caches + unregister old SW then reload
+    if (btnSettingsInstall) {
+      btnSettingsInstall.disabled = true;
+      btnSettingsInstall.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right:6px;"></i>Updating...';
+    }
+    showToast('🔄 Checking for updates...');
+    try {
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (const reg of regs) {
+          await reg.update();
+          if (reg.waiting) {
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+        }
+        // Also nuke all caches so assets are freshly fetched
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(name => caches.delete(name)));
       }
-      showToast("Updating to latest version...");
-      setTimeout(() => window.location.reload(true), 1500);
-    } else {
-      window.location.reload(true);
+      showToast('✅ Updated! Reloading now...');
+      setTimeout(() => window.location.reload(true), 1200);
+    } catch (err) {
+      console.error('Force update error:', err);
+      showToast('⚠️ Could not update. Try again.');
+      if (btnSettingsInstall) {
+        btnSettingsInstall.disabled = false;
+        updateInstallButtonUI();
+      }
     }
     return;
   }
+  // Trigger native browser install prompt
   deferredPrompt.prompt();
   const { outcome } = await deferredPrompt.userChoice;
   console.log(`Install prompt outcome: ${outcome}`);
   deferredPrompt = null;
+  updateInstallButtonUI();
   if (installPrompt) installPrompt.classList.add('hidden');
 };
 
@@ -1350,7 +1390,8 @@ if (btnInstallDismiss) {
 window.addEventListener('appinstalled', () => {
   if (installPrompt) installPrompt.classList.add('hidden');
   deferredPrompt = null;
-  showToast("App Installed Successfully! 🎉");
+  updateInstallButtonUI();
+  showToast('🎉 App Installed Successfully!');
 });
 
 // -----------------------------------------
