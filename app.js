@@ -178,7 +178,24 @@ if ('serviceWorker' in navigator) {
         keys.forEach(key => caches.delete(key));
       });
     } else {
-      navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW fail', err));
+      navigator.serviceWorker.register('./sw.js').then(reg => {
+        console.log('ServiceWorker registered with scope:', reg.scope);
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              newWorker.postMessage({ type: 'SKIP_WAITING' });
+            }
+          });
+        });
+      }).catch(err => console.log('SW fail', err));
+
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
     }
   });
 }
@@ -1211,35 +1228,4 @@ window.addEventListener('appinstalled', () => {
   showToast("App Installed Successfully!");
 });
 
-// -----------------------------------------
-// PWA SERVICE WORKER REGISTRATION & UPDATER
-// -----------------------------------------
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').then(reg => {
-      console.log('Anti-Gravity ServiceWorker registered with scope:', reg.scope);
-      
-      // Auto-update logic: Detect when a new SW is installing
-      reg.addEventListener('updatefound', () => {
-        const newWorker = reg.installing;
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // A new update is ready! Tell the new worker to skip waiting and take over
-            newWorker.postMessage({ type: 'SKIP_WAITING' });
-          }
-        });
-      });
-    }).catch(err => {
-      console.error('ServiceWorker registration failed:', err);
-    });
 
-    // When the new worker takes control, refresh the page automatically
-    // This guarantees the app is updated seamlessly without breaking IndexedDB state
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return;
-      refreshing = true;
-      window.location.reload();
-    });
-  });
-}
