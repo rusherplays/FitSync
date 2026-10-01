@@ -88,79 +88,191 @@ const ANIMATIONS = {
 };
 
 const routines = {
+
+  // ── BEGINNER: Anti-Procrastination Habit Builder ──
+  // Goal: Build the daily workout habit before ramping up intensity.
+  // Sessions are short (25–35 min) so there's zero excuse to skip.
+  // Nikhil: 22y · 181cm · 84kg · wants aesthetic physique fast.
   beginner: [
-    { day: 0, type: "Rest & Recover", desc: "Light walking, stretching. Focus on hydration.", exercises: [] },
-    { day: 1, type: "Full Body Foundation", desc: "Build basic strength and habits.", exercises: [
-      {name: "Light Stretching", sets:"2 min", type:"stretch", desc:"Stretch sides and legs."},
-      {name: "Arm Circles", sets:"1 min", type:"armcircle", desc:"Forward and reverse circles."},
-      {name: "Neck Rotation", sets:"1 min", type:"neckrotation", desc:"Slow, controlled rotations."},
-      {name: "Bodyweight Squats", sets:"3 sets × 10 reps", type:"squat", desc:"Push hips back and down. Keep chest up."},
-      {name: "Knee Push-ups", sets:"3 sets × 8 reps", type:"pushup", desc:"Chest to floor. Go slowly."},
-      {name: "Ab Roller", sets:"3 sets × 8-10 reps", type:"abroller", desc:"Keep core tight. Go slowly."}
-    ]},
-    { day: 2, type: "Rest & Recover", desc: "Allow muscles to rebuild.", exercises: [] },
-    { day: 3, type: "Full Body Foundation", desc: "Consistency is key.", exercises: [
-      {name: "Rope Skipping", sets:"5-10 min", type:"skipping", desc:"Comfortable pace or intervals."},
-      {name: "Lunges", sets:"3 sets × 10 reps/leg", type:"lunge", desc:"Step forward, lower back knee toward floor."},
-      {name: "Dumbbell Rows", sets:"3 sets × 10 reps", type:"row", desc:"Hinge forward, pull weight to hip."},
-      {name: "Crunches", sets:"3 sets × 15 reps", type:"ab", desc:"Contract abs, small movement."}
-    ]},
-    { day: 4, type: "Rest & Recover", desc: "Active stretching.", exercises: [] },
-    { day: 5, type: "Full Body Foundation", desc: "Finishing the week strong.", exercises: [
-      {name: "Cycling", sets:"20-40 min", type:"cycling", desc:"Steady pace."},
-      {name: "Pike Push-ups", sets:"3 sets × 8 reps", type:"press", desc:"Target shoulders."},
-      {name: "Bicycle Crunches", sets:"3 sets × 20 reps", type:"ab", desc:"Touch opposite elbow to knee."}
-    ]},
-    { day: 6, type: "Active Recovery", desc: "30 min brisk walk.", exercises: [
-      {name: "Brisk Walk", sets:"30 min", type:"walking", desc:"Elevate heart rate naturally."},
-      {name: "Full Body Stretch", sets:"10 min", type:"stretch", desc:"Hold each stretch 30 seconds."}
-    ]}
+    {
+      day: 0,
+      type: "Rest & Recharge",
+      desc: "Full rest day. Eat clean, drink 3–4L water, sleep 7–8 hrs. Recovery = growth.",
+      exercises: []
+    },
+    {
+      day: 1,
+      type: "Upper Body Foundation",
+      desc: "Chest, shoulders & biceps. 3 sets each. Rest 60 sec between sets.",
+      exercises: [
+        { name: "Neck Rotation",    sets: "1 min",           type: "neckrotation", desc: "Slow controlled rotations. Loosen up the neck & upper traps." },
+        { name: "Arm Circles",      sets: "1 min",           type: "armcircle",    desc: "Big forward + backward circles. Warm up the shoulder joints." },
+        { name: "Light Stretching", sets: "2 min",           type: "stretch",      desc: "Stretch chest & sides. Open up before pushing." },
+        { name: "Push Ups",         sets: "3 sets × 8 reps", type: "pushup",       desc: "Knee push ups are fine. Chest to floor, squeeze at top. Builds chest, shoulders & triceps." },
+        { name: "Dumbbell Curls",   sets: "3 sets × 12 reps",type: "curl",         desc: "Slow curl up, slower on the way down. Squeeze bicep at top." },
+        { name: "Shoulder Press",   sets: "3 sets × 12 reps",type: "press",        desc: "Press overhead, lock arms at top. Keep core tight. Builds shoulder width." }
+      ]
+    },
+    {
+      day: 2,
+      type: "Cardio & Core",
+      desc: "Quick 25 min fat-burning session. No weights needed — just you vs the clock.",
+      exercises: [
+        { name: "Neck Rotation",    sets: "1 min",            type: "neckrotation", desc: "Wake up the neck. Slow and controlled." },
+        { name: "Arm Circles",      sets: "1 min",            type: "armcircle",    desc: "Shoulder warm-up before skipping." },
+        { name: "Rope Skipping",    sets: "5–10 min",         type: "skipping",     desc: "1 min skip + 30 sec rest. Burns fat fast and improves stamina." },
+        { name: "Ab Roller",        sets: "2 sets × 8 reps",  type: "abroller",     desc: "Go slowly. Keep core braced. Don't arch lower back." },
+        { name: "Plank",            sets: "2 sets × 30 sec",  type: "plank",        desc: "Straight body from head to heels. Squeeze abs the whole time." }
+      ]
+    },
+    {
+      day: 3,
+      type: "Lower Body & Back",
+      desc: "Legs + back. These are your biggest muscles — training them burns the most fat.",
+      exercises: [
+        { name: "Neck Rotation",    sets: "1 min",            type: "neckrotation", desc: "Quick neck warm-up." },
+        { name: "Light Stretching", sets: "2 min",            type: "stretch",      desc: "Hip flexor & hamstring stretch before squatting." },
+        { name: "Squats",           sets: "3 sets × 15 reps", type: "squat",        desc: "Hips below knees. Chest up, heels flat. The king of all exercises." },
+        { name: "Lunges",           sets: "3 sets × 10 reps", type: "lunge",        desc: "10 reps each leg. Step forward, lower back knee toward floor. Keeps form tight." },
+        { name: "Dumbbell Rows",    sets: "3 sets × 12 reps", type: "row",          desc: "Hinge at hips, pull to hip. Each arm. Builds back width and thickness." }
+      ]
+    },
+    {
+      day: 4,
+      type: "Rest & Recover",
+      desc: "Mid-week reset. Your muscles are rebuilding right now. Eat protein, sleep well.",
+      exercises: []
+    },
+    {
+      day: 5,
+      type: "Full Body Circuit",
+      desc: "Hit everything in one shot. 4 exercises, minimal rest. This is where habits get locked in.",
+      exercises: [
+        { name: "Arm Circles",      sets: "1 min",            type: "armcircle",    desc: "Quick shoulder warm-up." },
+        { name: "Push Ups",         sets: "3 sets × 10 reps", type: "pushup",       desc: "Add 2 more reps from Monday. You're getting stronger." },
+        { name: "Squats",           sets: "3 sets × 15 reps", type: "squat",        desc: "Go deeper this time. Feel the quad burn." },
+        { name: "Dumbbell Curls",   sets: "3 sets × 12 reps", type: "curl",         desc: "Controlled reps. No swinging." },
+        { name: "Ab Roller",        sets: "3 sets × 8 reps",  type: "abroller",     desc: "3 sets this time. Core getting stronger every week." },
+        { name: "Plank",            sets: "2 sets × 40 sec",  type: "plank",        desc: "10 more seconds than Tuesday. Breathe steadily." }
+      ]
+    },
+    {
+      day: 6,
+      type: "Cardio Day",
+      desc: "Weekend outdoor session. Enjoy it — this is the easy win that builds momentum.",
+      exercises: [
+        { name: "Rope Skipping",    sets: "10 min",           type: "skipping",     desc: "Intervals: 1 min on, 30 sec off. Gets the heart pumping." },
+        { name: "Cycling",          sets: "20–40 min",        type: "cycling",      desc: "Steady pace. Burns fat without breaking down muscle." },
+        { name: "Fast Walk",        sets: "30 min",           type: "walking",      desc: "8000–10000 steps. OR replace with cycling. Pick one and do it." }
+      ]
+    }
   ],
+
+  // ── ADVANCED: Aesthetic Physique Split ──
+  // Goal: Maximum fat loss + muscle definition for a shredded look.
+  // Sessions: 45–60 min. Rest 60–90 sec between sets. Protein 100–120g/day.
   advanced: [
-    { day: 0, type: "Rest Day", desc: "Complete rest and meal prep.", exercises: [] },
-    { day: 1, type: "Push (Chest/Shoulders/Triceps)", desc: "Heavy pressing day.", exercises: [
-      {name: "Bench Press", sets:"4 sets × 8 reps", type:"press", desc:"Compound chest movement."},
-      {name: "Overhead Press", sets:"4 sets × 8 reps", type:"press", desc:"Strict barbell overhead."},
-      {name: "Tricep Dips", sets:"3 sets × 12 reps", type:"pushup", desc:"Keep elbows tucked."},
-      {name: "Lateral Raises", sets:"4 sets × 15 reps", type:"warmup", desc:"Target side delts."}
-    ]},
-    { day: 2, type: "Pull (Back/Biceps)", desc: "Vertical and horizontal pulls.", exercises: [
-      {name: "Pull-ups", sets:"4 sets × Max", type:"row", desc:"Wide grip, pull to chin."},
-      {name: "Barbell Rows", sets:"4 sets × 10 reps", type:"row", desc:"Keep back straight."},
-      {name: "Face Pulls", sets:"3 sets × 15 reps", type:"row", desc:"Target rear delts."},
-      {name: "Bicep Curls", sets:"3 sets × 12 reps", type:"curl", desc:"Squeeze at the top."}
-    ]},
-    { day: 3, type: "Legs (Quads/Hams/Calves)", desc: "Heavy lower body.", exercises: [
-      {name: "Squats", sets:"4 sets × 8 reps", type:"squat", desc:"Below parallel."},
-      {name: "Romanian Deadlifts", sets:"4 sets × 10 reps", type:"squat", desc:"Hinge at hips, slight knee bend."},
-      {name: "Leg Press", sets:"3 sets × 12 reps", type:"squat", desc:"Don't lock out knees."},
-      {name: "Calf Raises", sets:"4 sets × 20 reps", type:"squat", desc:"Full stretch at bottom."}
-    ]},
-    { day: 4, type: "Push Hypertrophy", desc: "Volume focus.", exercises: [
-      {name: "Incline DB Press", sets:"4 sets × 10 reps", type:"press", desc:"Target upper chest."},
-      {name: "Arnold Press", sets:"3 sets × 12 reps", type:"press", desc:"Full shoulder rotation."},
-      {name: "Tricep Extensions", sets:"3 sets × 15 reps", type:"curl", desc:"Overhead or cable."}
-    ]},
-    { day: 5, type: "Pull Hypertrophy", desc: "Volume focus.", exercises: [
-      {name: "Lat Pulldowns", sets:"4 sets × 12 reps", type:"row", desc:"Control the negative."},
-      {name: "Seated Cable Rows", sets:"3 sets × 12 reps", type:"row", desc:"Squeeze shoulder blades."},
-      {name: "Hammer Curls", sets:"3 sets × 12 reps", type:"curl", desc:"Neutral grip."}
-    ]},
-    { day: 6, type: "Legs Hypertrophy", desc: "Volume focus.", exercises: [
-      {name: "Front Squats", sets:"3 sets × 10 reps", type:"squat", desc:"Keep elbows high."},
-      {name: "Bulgarian Split Squats", sets:"3 sets × 10 reps/leg", type:"lunge", desc:"Use dumbbells."},
-      {name: "Leg Curls", sets:"3 sets × 15 reps", type:"squat", desc:"Hamstring isolation."}
-    ]}
+    {
+      day: 0,
+      type: "Rest Day",
+      desc: "Complete rest. Meal prep for the week. Eat 2100–2200 kcal, 100–120g protein.",
+      exercises: []
+    },
+    {
+      day: 1,
+      type: "Push Day — Chest & Shoulders",
+      desc: "Compound pressing movements for chest, shoulders. Ends with core. 45 min total.",
+      exercises: [
+        { name: "Neck Rotation",    sets: "1 min",            type: "neckrotation", desc: "Loosen up cervical spine before heavy pressing." },
+        { name: "Arm Circles",      sets: "1 min",            type: "armcircle",    desc: "Activate rotator cuff before loading shoulders." },
+        { name: "Light Stretching", sets: "2 min",            type: "stretch",      desc: "Open chest and anterior shoulder before pressing." },
+        { name: "Rope Skipping",    sets: "10 min",           type: "skipping",     desc: "Full warm-up cardio. Elevate heart rate before lifting." },
+        { name: "Push Ups",         sets: "4 sets × 15 reps", type: "pushup",       desc: "Full range. Pause 1 sec at bottom. Last set to failure for max gains." },
+        { name: "Shoulder Press",   sets: "4 sets × 12 reps", type: "press",        desc: "Press overhead explosively, lower slowly (3 sec down). Width builder." },
+        { name: "Ab Roller",        sets: "3 sets × 10 reps", type: "abroller",     desc: "Full extension. Core braced throughout. Do NOT let back sag." },
+        { name: "Plank",            sets: "3 sets × 45 sec",  type: "plank",        desc: "Squeeze glutes + abs simultaneously. No hip drop." }
+      ]
+    },
+    {
+      day: 2,
+      type: "Pull Day — Back & Biceps",
+      desc: "Back thickness + bicep peaks. Cardio finisher burns extra fat. 50 min total.",
+      exercises: [
+        { name: "Neck Rotation",    sets: "1 min",            type: "neckrotation", desc: "Quick cervical warm-up." },
+        { name: "Arm Circles",      sets: "1 min",            type: "armcircle",    desc: "Loosen up before pulling movements." },
+        { name: "Dumbbell Curls",   sets: "4 sets × 12 reps", type: "curl",         desc: "Supinate wrist at top. Full squeeze. 3 sec negative for max hypertrophy." },
+        { name: "Dumbbell Rows",    sets: "4 sets × 12 reps", type: "row",          desc: "Heavy as possible with good form. Pull elbow to ceiling, not to side." },
+        { name: "Rope Skipping",    sets: "10 min",           type: "skipping",     desc: "Post-strength cardio accelerates fat burn when glycogen is depleted." },
+        { name: "Cycling",          sets: "20 min",           type: "cycling",      desc: "Steady state fat burning. Zone 2 heart rate (can hold conversation)." }
+      ]
+    },
+    {
+      day: 3,
+      type: "Leg Day — Quads & Glutes",
+      desc: "Biggest muscle group = biggest calorie burn. Core superset at end. 50 min total.",
+      exercises: [
+        { name: "Neck Rotation",    sets: "1 min",            type: "neckrotation", desc: "Warm up before loading spine with squats." },
+        { name: "Light Stretching", sets: "3 min",            type: "stretch",      desc: "Hip flexors, quads, hamstrings. Critical before squatting heavy." },
+        { name: "Squats",           sets: "4 sets × 15 reps", type: "squat",        desc: "Break parallel. Tempo: 2 sec down, explosive up. Add weight each week." },
+        { name: "Lunges",           sets: "4 sets × 10 reps", type: "lunge",        desc: "10 each leg. Add dumbbells for progressive overload. Hits glutes hard." },
+        { name: "Ab Roller",        sets: "3 sets × 12 reps", type: "abroller",     desc: "Superset with plank. No rest between ab roller and plank." },
+        { name: "Plank",            sets: "3 sets × 60 sec",  type: "plank",        desc: "60 full seconds. Focus on breathing. Full core engagement." }
+      ]
+    },
+    {
+      day: 4,
+      type: "Cardio Blast — Fat Burn",
+      desc: "Pure fat-burning session. No weights. Keep heart rate elevated the whole time.",
+      exercises: [
+        { name: "Arm Circles",      sets: "1 min",            type: "armcircle",    desc: "Wake up the shoulders before cardio." },
+        { name: "Rope Skipping",    sets: "15 min",           type: "skipping",     desc: "Intervals: 2 min on, 30 sec off. Burns 10–15 kcal/min. Best fat burner." },
+        { name: "Cycling",          sets: "20–30 min",        type: "cycling",      desc: "Steady state Zone 2. Fat as primary fuel. Keep going, don't stop." },
+        { name: "Fast Walk",        sets: "20 min",           type: "walking",      desc: "Cool-down walk. Flush lactic acid. Hit your 10k step goal." }
+      ]
+    },
+    {
+      day: 5,
+      type: "Full Body Strength",
+      desc: "All major muscle groups. High volume. This is the session that changes your physique. 60 min.",
+      exercises: [
+        { name: "Neck Rotation",    sets: "1 min",            type: "neckrotation", desc: "Full cervical warm-up." },
+        { name: "Arm Circles",      sets: "1 min",            type: "armcircle",    desc: "Shoulder activation before pressing and rowing." },
+        { name: "Light Stretching", sets: "2 min",            type: "stretch",      desc: "Full body mobilisation before compound lifts." },
+        { name: "Push Ups",         sets: "4 sets × 15 reps", type: "pushup",       desc: "Last set to absolute failure. No excuses." },
+        { name: "Dumbbell Curls",   sets: "4 sets × 12 reps", type: "curl",         desc: "Slow negatives. Feel every rep in the bicep." },
+        { name: "Shoulder Press",   sets: "4 sets × 12 reps", type: "press",        desc: "Press overhead. Build those boulder shoulders." },
+        { name: "Squats",           sets: "4 sets × 15 reps", type: "squat",        desc: "Deeper every week. Quad separation starts here." },
+        { name: "Lunges",           sets: "3 sets × 10 reps", type: "lunge",        desc: "Weighted if possible. Each leg. Builds the V-taper base." },
+        { name: "Dumbbell Rows",    sets: "4 sets × 12 reps", type: "row",          desc: "Heavy. Back thickness is what makes the physique look 3D." }
+      ]
+    },
+    {
+      day: 6,
+      type: "Core & Cardio Finisher",
+      desc: "End the week strong. Core definition + weekend cardio. The abs are made on this day.",
+      exercises: [
+        { name: "Rope Skipping",    sets: "15 min",           type: "skipping",     desc: "Maximum effort. Burn the last of the week's calories." },
+        { name: "Ab Roller",        sets: "4 sets × 10 reps", type: "abroller",     desc: "The #1 ab exercise. Full extension slowly, pull back with abs." },
+        { name: "Plank",            sets: "4 sets × 60 sec",  type: "plank",        desc: "1 full minute. Do not let the hips drop. Core is everything." },
+        { name: "Fast Walk",        sets: "30 min",           type: "walking",      desc: "Cool down walk. Hit 10k steps. Reflect on the week — you showed up." }
+      ]
+    }
   ]
 };
 
 const motivationalTips = [
-  "Consistency is the key to progress.",
-  "Your only limit is you.",
-  "Sweat is fat crying.",
-  "Make it a habit, not a chore.",
-  "The hardest lift of all is lifting your butt off the couch."
+  "Nikhil, the best workout is the one you actually do. Start now.",
+  "You don't need motivation — you need discipline. Do it anyway.",
+  "181cm, 84kg, 22 years old. The aesthetic physique is 8 weeks away.",
+  "Stop planning. Start moving. 5 minutes in, you'll be glad you started.",
+  "Every set you complete is a vote for the person you're becoming.",
+  "Procrastination is the enemy. The gym is the answer. Open the app, do the first exercise.",
+  "Your future body is built in the moments you don't feel like working out.",
+  "Consistency beats perfection every single time, Nikhil.",
+  "2100–2200 kcal. 100–120g protein. 3–4L water. Sleep 7–8 hrs. That's the formula.",
+  "70% diet + 45–60 min workout daily = transformation. Simple math."
 ];
+
 
 // -----------------------------------------
 // INIT & PWA — SERVICE WORKER (SINGLE REGISTRATION)
