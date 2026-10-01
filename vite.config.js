@@ -1,11 +1,11 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  // GitHub Pages serves from /FitSync/ (repo name)
-  base: '/FitSync/',
+  // GitHub Pages needs /FitSync/, Vercel needs /
+  // Set VITE_BASE env var per deployment; defaults to / (Vercel)
+  base: process.env.VITE_BASE || '/',
   build: {
     outDir: 'dist',
-    // Don't inline small assets — keep them as files
     assetsInlineLimit: 0,
   },
   publicDir: 'public',
