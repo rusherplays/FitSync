@@ -380,10 +380,11 @@
       <div class="anim-info" style="width:100%; text-align:center;">
         <p id="modalDesc" style="font-size:0.9rem;color:var(--text-secondary);line-height:1.5;margin-bottom:10px"></p>
         
-        <!-- Timer UI -->
+        <!-- Target & Timer UI -->
+        <div id="modalTargetDisplay" style="display:none; font-size:1.2rem; font-weight:700; color:#fff; margin-bottom:10px; background:rgba(255,255,255,0.1); padding:5px 15px; border-radius:20px;">🎯 Target: 10 Reps</div>
         <div id="timerContainer" style="display:none; flex-direction:column; align-items:center; margin-bottom:15px;">
-          <div id="timerDisplay" style="font-size:3rem; font-weight:800; color:var(--accent-1); font-variant-numeric:tabular-nums;">00:30</div>
-          <div id="timerLabel" style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent-2); font-weight:700;">Resting</div>
+          <div id="timerDisplay" style="font-size:3.5rem; font-weight:800; color:var(--accent-1); font-variant-numeric:tabular-nums; line-height:1;">00:30</div>
+          <div id="timerLabel" style="font-size:0.85rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent-2); font-weight:700; margin-top:5px;">Resting</div>
         </div>
         
         <div class="anim-sets" id="setTracker" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;"></div>

@@ -474,8 +474,12 @@ let modalSetsNum = 1;
 let modalSetsCompleted = 0;
 let modalIsResting = false;
 let modalIsActive = false;
+let modalIsPrep = false;
 let modalTimerInterval = null;
 let modalTimeLeft = 30;
+let modalSetTime = 0;
+let modalTargetType = 'reps';
+let modalTargetAmount = 0;
 
 window.openExerciseModal = function(idx, name, desc, setsStr, type) {
   modalExIdx = idx;
@@ -489,14 +493,50 @@ window.openExerciseModal = function(idx, name, desc, setsStr, type) {
   if (setsStr.includes('4 sets') || setsStr.includes('4×')) modalSetsNum = 4;
   if (setsStr.includes('2 sets') || setsStr.includes('2×')) modalSetsNum = 2;
   
+  // Parse Target
+  modalTargetType = 'reps';
+  modalTargetAmount = 0;
+  let targetDisplayStr = "";
+  if (setsStr.includes('min')) {
+    modalTargetType = 'time';
+    let match = setsStr.match(/(\d+)(-\d+)?\s*min/);
+    if (match) {
+      modalTargetAmount = parseInt(match[1]) * 60; // seconds
+      targetDisplayStr = `🎯 Target: ${match[1]} Minutes`;
+    }
+  } else if (setsStr.includes('sec')) {
+    modalTargetType = 'time';
+    let match = setsStr.match(/(\d+)\s*sec/);
+    if (match) {
+      modalTargetAmount = parseInt(match[1]);
+      targetDisplayStr = `🎯 Target: ${match[1]} Seconds`;
+    }
+  } else {
+    let match = setsStr.match(/(\d+)\s*reps/);
+    if (match) {
+      modalTargetAmount = parseInt(match[1]);
+      targetDisplayStr = `🎯 Target: ${match[1]} Reps`;
+    }
+  }
+
+  const tDisplay = document.getElementById('modalTargetDisplay');
+  if (targetDisplayStr) {
+    tDisplay.innerText = targetDisplayStr;
+    tDisplay.style.display = 'inline-block';
+  } else {
+    tDisplay.style.display = 'none';
+  }
+  
   modalSetsCompleted = 0;
   modalIsResting = false;
   modalIsActive = false;
+  modalIsPrep = false;
   clearInterval(modalTimerInterval);
   
   document.getElementById('timerContainer').style.display = 'none';
   document.getElementById('btnActionTimer').innerText = `Start Set 1`;
   document.getElementById('btnActionTimer').className = 'btn-primary';
+  document.getElementById('btnActionTimer').disabled = false;
   
   let setsHtml = '';
   for(let i=0; i<modalSetsNum; i++) {
@@ -510,18 +550,40 @@ window.openExerciseModal = function(idx, name, desc, setsStr, type) {
 }
 
 window.handleModalAction = function() {
+  if (modalIsPrep) return; // Disable clicking during 3-2-1
+  
   if (modalIsResting) {
     // Skip Rest
     endRest();
   } else if (!modalIsActive) {
-    // Start Set
-    modalIsActive = true;
-    document.getElementById('btnActionTimer').innerText = `Complete Set ${modalSetsCompleted + 1}`;
+    // Start Prep (3, 2, 1)
+    modalIsPrep = true;
+    document.getElementById('setTracker').style.display = 'none';
+    document.getElementById('timerContainer').style.display = 'flex';
+    document.getElementById('timerLabel').innerText = `GET READY`;
+    document.getElementById('timerDisplay').innerText = `3`;
+    document.getElementById('btnActionTimer').innerText = `Get Ready...`;
+    document.getElementById('btnActionTimer').disabled = true;
+    
+    let prepCount = 3;
+    speak(prepCount.toString());
     playBeep('tick');
-    speak(`Go!`);
+    
+    modalTimerInterval = setInterval(() => {
+      prepCount--;
+      if (prepCount > 0) {
+        document.getElementById('timerDisplay').innerText = prepCount;
+        speak(prepCount.toString());
+        playBeep('tick');
+      } else {
+        clearInterval(modalTimerInterval);
+        startSet();
+      }
+    }, 1000);
   } else {
     // Complete Set
     modalIsActive = false;
+    clearInterval(modalTimerInterval);
     document.getElementById(`setPill${modalSetsCompleted}`).classList.add('done');
     modalSetsCompleted++;
     
@@ -538,6 +600,45 @@ window.handleModalAction = function() {
       startRest();
     }
   }
+}
+
+function startSet() {
+  modalIsPrep = false;
+  modalIsActive = true;
+  document.getElementById('btnActionTimer').disabled = false;
+  document.getElementById('btnActionTimer').innerText = `Complete Set ${modalSetsCompleted + 1}`;
+  document.getElementById('timerLabel').innerText = modalTargetType === 'time' ? `TIME REMAINING` : `TIME ELAPSED`;
+  
+  speak("Go!");
+  playBeep('success');
+  
+  if (modalTargetType === 'time') {
+    modalSetTime = modalTargetAmount; // Countdown
+  } else {
+    modalSetTime = 0; // Stopwatch
+  }
+  updateTimerDisplay(modalSetTime);
+  
+  modalTimerInterval = setInterval(() => {
+    if (modalTargetType === 'time') {
+      modalSetTime--;
+      if (modalSetTime <= 0) {
+        // Auto complete set when time is up
+        handleModalAction();
+        return;
+      }
+      if (modalSetTime <= 3) playBeep('tick');
+    } else {
+      modalSetTime++;
+    }
+    updateTimerDisplay(modalSetTime);
+  }, 1000);
+}
+
+function updateTimerDisplay(totalSeconds) {
+  let m = Math.floor(totalSeconds / 60);
+  let s = totalSeconds % 60;
+  document.getElementById('timerDisplay').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
 }
 
 function startRest() {
