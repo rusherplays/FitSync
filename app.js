@@ -1308,30 +1308,24 @@ const btnInstallDismiss = document.getElementById('btnInstallDismiss');
 const btnSettingsInstall = document.getElementById('btnSettingsInstall');
 
 window.addEventListener('beforeinstallprompt', (e) => {
-  // Prevent the mini-infobar from appearing on mobile
   e.preventDefault();
-  // Stash the event so it can be triggered later
   deferredPrompt = e;
-  // Update UI notify the user they can install the PWA
-  if (installPrompt && !appState.installPromptDismissed) {
+  if (installPrompt) {
     installPrompt.classList.remove('hidden');
   }
 });
 
 const handleInstall = async () => {
   if (!deferredPrompt) {
-    // If install prompt is not available, act as a Force Update button
+    // No install prompt — act as Force Update
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(registrations => {
-        registrations.forEach(reg => reg.update());
-      });
-      caches.keys().then(keys => {
-        keys.forEach(key => caches.delete(key));
-      });
-      showToast("Updating app to latest version...");
-      setTimeout(() => {
-        window.location.reload(true);
-      }, 1000);
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const reg of regs) {
+        await reg.update();
+        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+      showToast("Updating to latest version...");
+      setTimeout(() => window.location.reload(true), 1500);
     } else {
       window.location.reload(true);
     }
@@ -1339,41 +1333,69 @@ const handleInstall = async () => {
   }
   deferredPrompt.prompt();
   const { outcome } = await deferredPrompt.userChoice;
-  console.log(`User response to the install prompt: ${outcome}`);
+  console.log(`Install prompt outcome: ${outcome}`);
   deferredPrompt = null;
   if (installPrompt) installPrompt.classList.add('hidden');
 };
 
-if (btnInstallAccept) {
-  btnInstallAccept.addEventListener('click', handleInstall);
-}
-
-if (btnSettingsInstall) {
-  btnSettingsInstall.addEventListener('click', handleInstall);
-}
+if (btnInstallAccept) btnInstallAccept.addEventListener('click', handleInstall);
+if (btnSettingsInstall) btnSettingsInstall.addEventListener('click', handleInstall);
 
 if (btnInstallDismiss) {
   btnInstallDismiss.addEventListener('click', () => {
-    installPrompt.classList.add('hidden');
-    appState.installPromptDismissed = true;
-    saveState(appState);
+    if (installPrompt) installPrompt.classList.add('hidden');
   });
 }
 
 window.addEventListener('appinstalled', () => {
   if (installPrompt) installPrompt.classList.add('hidden');
   deferredPrompt = null;
-  console.log('PWA was installed');
-  showToast("App Installed Successfully!");
+  showToast("App Installed Successfully! 🎉");
 });
 
-// Register Service Worker
+// -----------------------------------------
+// SERVICE WORKER REGISTRATION & AUTO-UPDATE
+// -----------------------------------------
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').then(registration => {
-      console.log('ServiceWorker registration successful with scope: ', registration.scope);
-    }, err => {
-      console.log('ServiceWorker registration failed: ', err);
-    });
+  window.addEventListener('load', async () => {
+    try {
+      const registration = await navigator.serviceWorker.register('./sw.js');
+      console.log('ServiceWorker registered, scope:', registration.scope);
+
+      let refreshing = false;
+      // When the SW controller changes (after skipWaiting + claim), reload once
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          showToast('App updated! Reloading... ✅');
+          setTimeout(() => window.location.reload(), 1000);
+        }
+      });
+
+      const activateWaiting = (worker) => {
+        if (worker) worker.postMessage({ type: 'SKIP_WAITING' });
+      };
+
+      // Already a waiting worker from a previous update
+      if (registration.waiting) {
+        activateWaiting(registration.waiting);
+      }
+
+      // New SW found while page is open
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            activateWaiting(newWorker);
+          }
+        });
+      });
+
+      // Check for updates every 30 minutes
+      setInterval(() => registration.update(), 30 * 60 * 1000);
+
+    } catch (err) {
+      console.error('ServiceWorker registration failed:', err);
+    }
   });
 }

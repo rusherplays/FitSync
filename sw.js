@@ -1,10 +1,12 @@
-const CACHE_NAME = 'fiitsync-v3';
+const CACHE_NAME = 'fiitsync-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './style.css',
   './app.js',
   './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
   'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://unpkg.com/dexie@3.2.4/dist/dexie.js'
@@ -16,7 +18,8 @@ self.addEventListener('install', (event) => {
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
-  // We don't skipWaiting unconditionally here anymore, we wait for the client to tell us
+  // Immediately replace old SW without waiting for tabs to close
+  self.skipWaiting();
 });
 
 // Listen for messages from the client to skip waiting
@@ -38,6 +41,7 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+  // Take control of all clients immediately
   self.clients.claim();
 });
 
