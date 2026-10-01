@@ -36,6 +36,7 @@ body {
   color: var(--text-primary);
   line-height: 1.5;
   overflow: hidden; 
+  height: 100dvh;
 }
 
 /* Typography Helpers */
@@ -51,7 +52,7 @@ h1, h2, h3, h4 { font-weight: 700; }
 .app-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
   width: 100vw;
   max-width: 600px;
   margin: 0 auto;

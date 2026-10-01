@@ -1190,8 +1190,9 @@ window.showToast = function(msg) {
 // PWA INSTALLATION LOGIC (A2HS)
 // -----------------------------------------
 let deferredPrompt;
-const installBanner = document.getElementById('installBanner');
-const btnInstallApp = document.getElementById('btnInstallApp');
+const installPrompt = document.getElementById('installPrompt');
+const btnInstallAccept = document.getElementById('btnInstallAccept');
+const btnInstallDismiss = document.getElementById('btnInstallDismiss');
 
 window.addEventListener('beforeinstallprompt', (e) => {
   // Prevent the mini-infobar from appearing on mobile
@@ -1199,30 +1200,32 @@ window.addEventListener('beforeinstallprompt', (e) => {
   // Stash the event so it can be triggered later
   deferredPrompt = e;
   // Update UI notify the user they can install the PWA
-  if (installBanner) {
-    installBanner.style.display = 'flex';
+  if (installPrompt && !appState.installPromptDismissed) {
+    installPrompt.classList.remove('hidden');
   }
 });
 
-if (btnInstallApp) {
-  btnInstallApp.addEventListener('click', async () => {
+if (btnInstallAccept) {
+  btnInstallAccept.addEventListener('click', async () => {
     if (!deferredPrompt) return;
-    // Show the install prompt
     deferredPrompt.prompt();
-    // Wait for the user to respond to the prompt
     const { outcome } = await deferredPrompt.userChoice;
     console.log(`User response to the install prompt: ${outcome}`);
-    // We've used the prompt, and can't use it again, throw it away
     deferredPrompt = null;
-    // Hide the banner
-    installBanner.style.display = 'none';
+    installPrompt.classList.add('hidden');
+  });
+}
+
+if (btnInstallDismiss) {
+  btnInstallDismiss.addEventListener('click', () => {
+    installPrompt.classList.add('hidden');
+    appState.installPromptDismissed = true;
+    saveState(appState);
   });
 }
 
 window.addEventListener('appinstalled', () => {
-  // Hide the app-provided install promotion
-  if (installBanner) installBanner.style.display = 'none';
-  // Clear the deferredPrompt so it can be garbage collected
+  if (installPrompt) installPrompt.classList.add('hidden');
   deferredPrompt = null;
   console.log('PWA was installed');
   showToast("App Installed Successfully!");
