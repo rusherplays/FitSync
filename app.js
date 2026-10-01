@@ -121,7 +121,7 @@ const routines = {
         { name: "Neck Rotation",    sets: "1 min",            type: "neckrotation", desc: "Wake up the neck. Slow and controlled." },
         { name: "Arm Circles",      sets: "1 min",            type: "armcircle",    desc: "Shoulder warm-up before skipping." },
         { name: "Rope Skipping",    sets: "5–10 min",         type: "skipping",     desc: "1 min skip + 30 sec rest. Burns fat fast and improves stamina." },
-        { name: "Ab Roller",        sets: "2 sets × 8 reps",  type: "abroller",     desc: "Go slowly. Keep core braced. Don't arch lower back." },
+        { name: "Ab Roller",        sets: "2 sets × 8 reps",  type: "abroller",     desc: "Go slowly. Keep core braced. Do not arch lower back." },
         { name: "Plank",            sets: "2 sets × 30 sec",  type: "plank",        desc: "Straight body from head to heels. Squeeze abs the whole time." }
       ]
     },
@@ -149,7 +149,7 @@ const routines = {
       desc: "Hit everything in one shot. 4 exercises, minimal rest. This is where habits get locked in.",
       exercises: [
         { name: "Arm Circles",      sets: "1 min",            type: "armcircle",    desc: "Quick shoulder warm-up." },
-        { name: "Push Ups",         sets: "3 sets × 10 reps", type: "pushup",       desc: "Add 2 more reps from Monday. You're getting stronger." },
+        { name: "Push Ups",         sets: "3 sets × 10 reps", type: "pushup",       desc: "Add 2 more reps from Monday. You are getting stronger." },
         { name: "Squats",           sets: "3 sets × 15 reps", type: "squat",        desc: "Go deeper this time. Feel the quad burn." },
         { name: "Dumbbell Curls",   sets: "3 sets × 12 reps", type: "curl",         desc: "Controlled reps. No swinging." },
         { name: "Ab Roller",        sets: "3 sets × 8 reps",  type: "abroller",     desc: "3 sets this time. Core getting stronger every week." },
@@ -226,7 +226,7 @@ const routines = {
       exercises: [
         { name: "Arm Circles",      sets: "1 min",            type: "armcircle",    desc: "Wake up the shoulders before cardio." },
         { name: "Rope Skipping",    sets: "15 min",           type: "skipping",     desc: "Intervals: 2 min on, 30 sec off. Burns 10–15 kcal/min. Best fat burner." },
-        { name: "Cycling",          sets: "20–30 min",        type: "cycling",      desc: "Steady state Zone 2. Fat as primary fuel. Keep going, don't stop." },
+        { name: "Cycling",          sets: "20–30 min",        type: "cycling",      desc: "Steady state Zone 2. Fat as primary fuel. Keep going, do not stop." },
         { name: "Fast Walk",        sets: "20 min",           type: "walking",      desc: "Cool-down walk. Flush lactic acid. Hit your 10k step goal." }
       ]
     },
@@ -251,7 +251,7 @@ const routines = {
       type: "Core & Cardio Finisher",
       desc: "End the week strong. Core definition + weekend cardio. The abs are made on this day.",
       exercises: [
-        { name: "Rope Skipping",    sets: "15 min",           type: "skipping",     desc: "Maximum effort. Burn the last of the week's calories." },
+        { name: "Rope Skipping",    sets: "15 min",           type: "skipping",     desc: "Maximum effort. Burn the last calories of the week." },
         { name: "Ab Roller",        sets: "4 sets × 10 reps", type: "abroller",     desc: "The #1 ab exercise. Full extension slowly, pull back with abs." },
         { name: "Plank",            sets: "4 sets × 60 sec",  type: "plank",        desc: "1 full minute. Do not let the hips drop. Core is everything." },
         { name: "Fast Walk",        sets: "30 min",           type: "walking",      desc: "Cool down walk. Hit 10k steps. Reflect on the week — you showed up." }
@@ -475,7 +475,7 @@ function renderHome() {
           <i class="fa-solid fa-check"></i>
         </div>
         <span class="step-name" onclick="toggleStep(event, ${idx}, ${totalCount})">${ex.name} (${ex.sets})</span>
-        <button class="btn-play-anim" onclick="openExerciseModal(${idx}, '${ex.name}', '${ex.desc}', '${ex.sets}', '${ex.type}')">
+        <button class="btn-play-anim" onclick="openTodayExercise(${idx})" aria-label="Play ${ex.name}">
           <i class="fa-solid fa-play"></i>
         </button>
       </li>
@@ -619,6 +619,29 @@ let modalTimeLeft = 30;
 let modalSetTime = 0;
 let modalTargetType = 'reps';
 let modalTargetAmount = 0;
+let modalIsToday = true;
+
+window.openTodayExercise = function(idx) {
+  const todayNum = new Date().getDay();
+  const routine = routines[appState.mode];
+  const todayRoutine = routine ? routine[todayNum] : null;
+  const ex = todayRoutine?.exercises?.[idx];
+  if (ex) {
+    modalIsToday = true;
+    openExerciseModal(idx, ex.name, ex.desc, ex.sets, ex.type);
+  }
+};
+
+window.openScheduleExercise = function(dayIdx, exIdx) {
+  const todayNum = new Date().getDay();
+  const routine = routines[appState.mode];
+  const dayPlan = routine ? routine[dayIdx] : null;
+  const ex = dayPlan?.exercises?.[exIdx];
+  if (ex) {
+    modalIsToday = (dayIdx === todayNum);
+    openExerciseModal(exIdx, ex.name, ex.desc, ex.sets, ex.type);
+  }
+};
 
 window.openExerciseModal = function(idx, name, desc, setsStr, type) {
   modalExIdx = idx;
@@ -732,8 +755,10 @@ window.handleModalAction = function() {
       showToast("Exercise Complete! ✅");
       setTimeout(() => {
         closeExerciseModal();
-        const stepEl = document.querySelector(`.step-item[data-idx="${modalExIdx}"] .step-name`);
-        if (stepEl && !stepEl.parentElement.classList.contains('checked')) stepEl.click();
+        if (modalIsToday) {
+          const stepEl = document.querySelector(`.step-item[data-idx="${modalExIdx}"] .step-name`);
+          if (stepEl && !stepEl.parentElement.classList.contains('checked')) stepEl.click();
+        }
       }, 1500);
     } else {
       startRest();
@@ -846,9 +871,19 @@ function renderSchedule() {
     const isToday = i === todayNum;
     let exHtml = '';
     if (dayPlan.exercises.length > 0) {
-      exHtml = '<ul style="list-style:inside; font-size:0.9rem; color:var(--text-secondary); margin-top:10px; display:flex; flex-direction:column; gap:5px;">';
+      exHtml = '<ul style="list-style:none; padding:0; margin-top:10px; display:flex; flex-direction:column; gap:8px;">';
       dayPlan.exercises.forEach((ex, idx) => {
-        exHtml += `<li style="cursor:pointer;" onclick="openExerciseModal(${idx}, '${ex.name}', '${ex.desc}', '${ex.sets}', '${ex.type}')">${ex.name}</li>`;
+        exHtml += `
+          <li style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:10px; padding:8px 12px; cursor:pointer;" onclick="openScheduleExercise(${i}, ${idx})">
+            <div>
+              <span style="font-weight:500; color:var(--text-primary); font-size:0.92rem;">${ex.name}</span>
+              <span style="font-size:0.78rem; color:var(--accent-1); margin-left:8px;">${ex.sets}</span>
+            </div>
+            <button class="btn-play-anim" style="pointer-events:none;" aria-label="View ${ex.name}">
+              <i class="fa-solid fa-play"></i>
+            </button>
+          </li>
+        `;
       });
       exHtml += '</ul>';
     }
