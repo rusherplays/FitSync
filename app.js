@@ -163,42 +163,69 @@ const motivationalTips = [
 ];
 
 // -----------------------------------------
-// INIT & PWA
+// INIT & PWA — SERVICE WORKER (SINGLE REGISTRATION)
 // -----------------------------------------
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      // Disable SW in Vite dev mode to prevent CSS caching issues
-      navigator.serviceWorker.getRegistrations().then(registrations => {
-        for(let registration of registrations) {
-          registration.unregister();
+(async () => {
+  if (!('serviceWorker' in navigator)) return;
+
+  const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
+  if (isLocal) {
+    // On localhost: unregister all SWs & clear caches so dev changes show instantly
+    const regs = await navigator.serviceWorker.getRegistrations();
+    for (const r of regs) r.unregister();
+    const keys = await caches.keys();
+    for (const k of keys) caches.delete(k);
+    return;
+  }
+
+  // --- PRODUCTION: silent auto-update, no data loss ---
+  // localStorage & IndexedDB are NEVER touched during SW updates.
+  // Only the HTTP cache is replaced with the new version's assets.
+
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    // Silent reload — user data is preserved
+    window.location.reload();
+  });
+
+  try {
+    const reg = await navigator.serviceWorker.register('./sw.js');
+    console.log('[SW] Registered, scope:', reg.scope);
+
+    const applyUpdate = (worker) => {
+      if (worker && worker.state !== 'redundant') {
+        worker.postMessage({ type: 'SKIP_WAITING' });
+      }
+    };
+
+    // Apply any already-waiting update immediately on page load
+    if (reg.waiting) applyUpdate(reg.waiting);
+
+    // Catch updates that install while the page is open
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          applyUpdate(newWorker);
         }
       });
-      caches.keys().then(keys => {
-        keys.forEach(key => caches.delete(key));
-      });
-    } else {
-      navigator.serviceWorker.register('./sw.js').then(reg => {
-        console.log('ServiceWorker registered with scope:', reg.scope);
-        reg.addEventListener('updatefound', () => {
-          const newWorker = reg.installing;
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              newWorker.postMessage({ type: 'SKIP_WAITING' });
-            }
-          });
-        });
-      }).catch(err => console.log('SW fail', err));
+    });
 
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (refreshing) return;
-        refreshing = true;
-        window.location.reload();
-      });
-    }
-  });
-}
+    // Poll for updates every 5 minutes
+    setInterval(() => reg.update(), 5 * 60 * 1000);
+
+    // Also check for update when the user brings the tab back into focus
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') reg.update();
+    });
+
+  } catch (err) {
+    console.error('[SW] Registration failed:', err);
+  }
+})();
 
 
 if (document.readyState === 'loading') {
@@ -1394,49 +1421,4 @@ window.addEventListener('appinstalled', () => {
   showToast('🎉 App Installed Successfully!');
 });
 
-// -----------------------------------------
-// SERVICE WORKER REGISTRATION & AUTO-UPDATE
-// -----------------------------------------
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', async () => {
-    try {
-      const registration = await navigator.serviceWorker.register('./sw.js');
-      console.log('ServiceWorker registered, scope:', registration.scope);
-
-      let refreshing = false;
-      // When the SW controller changes (after skipWaiting + claim), reload once
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-          refreshing = true;
-          showToast('App updated! Reloading... ✅');
-          setTimeout(() => window.location.reload(), 1000);
-        }
-      });
-
-      const activateWaiting = (worker) => {
-        if (worker) worker.postMessage({ type: 'SKIP_WAITING' });
-      };
-
-      // Already a waiting worker from a previous update
-      if (registration.waiting) {
-        activateWaiting(registration.waiting);
-      }
-
-      // New SW found while page is open
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            activateWaiting(newWorker);
-          }
-        });
-      });
-
-      // Check for updates every 30 minutes
-      setInterval(() => registration.update(), 30 * 60 * 1000);
-
-    } catch (err) {
-      console.error('ServiceWorker registration failed:', err);
-    }
-  });
-}
+// SW registration is handled at top of file (single unified block)
