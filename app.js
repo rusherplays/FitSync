@@ -1193,6 +1193,7 @@ let deferredPrompt;
 const installPrompt = document.getElementById('installPrompt');
 const btnInstallAccept = document.getElementById('btnInstallAccept');
 const btnInstallDismiss = document.getElementById('btnInstallDismiss');
+const btnSettingsInstall = document.getElementById('btnSettingsInstall');
 
 window.addEventListener('beforeinstallprompt', (e) => {
   // Prevent the mini-infobar from appearing on mobile
@@ -1205,15 +1206,38 @@ window.addEventListener('beforeinstallprompt', (e) => {
   }
 });
 
+const handleInstall = async () => {
+  if (!deferredPrompt) {
+    // If install prompt is not available, act as a Force Update button
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        registrations.forEach(reg => reg.update());
+      });
+      caches.keys().then(keys => {
+        keys.forEach(key => caches.delete(key));
+      });
+      showToast("Updating app to latest version...");
+      setTimeout(() => {
+        window.location.reload(true);
+      }, 1000);
+    } else {
+      window.location.reload(true);
+    }
+    return;
+  }
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  console.log(`User response to the install prompt: ${outcome}`);
+  deferredPrompt = null;
+  if (installPrompt) installPrompt.classList.add('hidden');
+};
+
 if (btnInstallAccept) {
-  btnInstallAccept.addEventListener('click', async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to the install prompt: ${outcome}`);
-    deferredPrompt = null;
-    installPrompt.classList.add('hidden');
-  });
+  btnInstallAccept.addEventListener('click', handleInstall);
+}
+
+if (btnSettingsInstall) {
+  btnSettingsInstall.addEventListener('click', handleInstall);
 }
 
 if (btnInstallDismiss) {
