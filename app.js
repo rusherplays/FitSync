@@ -473,6 +473,7 @@ let modalExIdx = -1;
 let modalSetsNum = 1;
 let modalSetsCompleted = 0;
 let modalIsResting = false;
+let modalIsActive = false;
 let modalTimerInterval = null;
 let modalTimeLeft = 30;
 
@@ -490,6 +491,7 @@ window.openExerciseModal = function(idx, name, desc, setsStr, type) {
   
   modalSetsCompleted = 0;
   modalIsResting = false;
+  modalIsActive = false;
   clearInterval(modalTimerInterval);
   
   document.getElementById('timerContainer').style.display = 'none';
@@ -511,8 +513,15 @@ window.handleModalAction = function() {
   if (modalIsResting) {
     // Skip Rest
     endRest();
+  } else if (!modalIsActive) {
+    // Start Set
+    modalIsActive = true;
+    document.getElementById('btnActionTimer').innerText = `Complete Set ${modalSetsCompleted + 1}`;
+    playBeep('tick');
+    speak(`Go!`);
   } else {
     // Complete Set
+    modalIsActive = false;
     document.getElementById(`setPill${modalSetsCompleted}`).classList.add('done');
     modalSetsCompleted++;
     
@@ -533,6 +542,7 @@ window.handleModalAction = function() {
 
 function startRest() {
   modalIsResting = true;
+  modalIsActive = false;
   modalTimeLeft = 30; // 30s rest
   
   document.getElementById('setTracker').style.display = 'none';
@@ -562,14 +572,15 @@ function startRest() {
 function endRest() {
   clearInterval(modalTimerInterval);
   modalIsResting = false;
+  modalIsActive = false;
   
   document.getElementById('timerContainer').style.display = 'none';
   document.getElementById('setTracker').style.display = 'flex';
-  document.getElementById('btnActionTimer').innerText = `Complete Set ${modalSetsCompleted + 1}`;
+  document.getElementById('btnActionTimer').innerText = `Start Set ${modalSetsCompleted + 1}`;
   document.getElementById('btnActionTimer').className = 'btn-primary';
   
   playBeep('success');
-  speak(`Start set ${modalSetsCompleted + 1}!`);
+  speak(`Ready for set ${modalSetsCompleted + 1}!`);
 }
 
 window.closeExerciseModal = function() { 
